@@ -1,29 +1,39 @@
-package Glient
+package gnet
 
 import (
-	IGlient "Gerver/Glient/iface"
+	"Gerver/gconf"
+	"Gerver/giface"
 	"fmt"
 	"net"
 )
 
 type Client struct {
-	conn net.Conn
+	conn     net.Conn
+	Name     string
+	Version  string
+	Host     string
+	HostPort uint
 }
 
-func NewClient() IGlient.IClient {
+func NewClient() giface.IClient {
 	c := &Client{
 		conn: nil,
 	}
+	c.Name = gconf.Globalconf.Name
+	c.Version = gconf.Globalconf.Version
+	c.Host = gconf.Globalconf.Host
+	c.HostPort = gconf.Globalconf.HostPort
 	return c
 }
 
 func (c *Client) Start() {
 	var err error
-	c.conn, err = net.Dial("tcp", "127.0.0.1:20000")
+	c.conn, err = net.Dial("tcp", (fmt.Sprintf("127.0.0.1:%d", c.HostPort)))
 	if err != nil {
 		fmt.Println("Dial err :", err)
 		return
 	}
+	fmt.Printf("[%s Client] start\n", c.Name)
 	buf := make([]byte, 128)
 	go func() {
 		for {

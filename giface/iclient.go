@@ -1,4 +1,4 @@
-package IGlient
+package giface
 
 type IClient interface {
 	Start()

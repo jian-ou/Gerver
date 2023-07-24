@@ -1,7 +1,7 @@
-package Gerver
+package gnet
 
 import (
-	IGerver "Gerver/Gerver/iface"
+	"Gerver/giface"
 	"bufio"
 	"fmt"
 	"net"
@@ -10,11 +10,11 @@ import (
 type Connection struct {
 	conn       net.Conn
 	connID     uint64
-	server     IGerver.IServer
+	server     giface.IServer
 	msgBufChan chan []byte
 }
 
-func NewConnection(server IGerver.IServer, conn net.Conn, connID uint64) IGerver.IConnection {
+func NewConnection(server giface.IServer, conn net.Conn, connID uint64) giface.IConnection {
 	c := &Connection{
 		conn:       conn,
 		connID:     connID,
@@ -73,7 +73,7 @@ func (c *Connection) Send(data []byte) {
 	}
 }
 
-func (c *Connection) GetServer() IGerver.IServer {
+func (c *Connection) GetServer() giface.IServer {
 	return c.server
 }
 

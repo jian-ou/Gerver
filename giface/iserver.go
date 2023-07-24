@@ -1,4 +1,4 @@
-package IGerver
+package giface
 
 type IServer interface {
 	Start()
