@@ -1,4 +1,4 @@
-package Glient
+package IGlient
 
 type IClient interface {
 	Start()

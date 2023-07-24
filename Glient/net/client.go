@@ -1,7 +1,7 @@
 package Glient
 
 import (
-	Glient "Gerver/Glient/iface"
+	IGlient "Gerver/Glient/iface"
 	"fmt"
 	"net"
 )
@@ -10,7 +10,7 @@ type Client struct {
 	conn net.Conn
 }
 
-func NewClient() Glient.IClient {
+func NewClient() IGlient.IClient {
 	c := &Client{
 		conn: nil,
 	}
@@ -24,9 +24,9 @@ func (c *Client) Start() {
 		fmt.Println("Dial err :", err)
 		return
 	}
+	buf := make([]byte, 128)
 	go func() {
 		for {
-			buf := [512]byte{}
 			n, err := c.conn.Read(buf[:])
 			if err != nil {
 				fmt.Println("recv failed, err:", err)
@@ -35,7 +35,6 @@ func (c *Client) Start() {
 			fmt.Println(string(buf[:n]))
 		}
 	}()
-
 }
 
 func (c *Client) Send(b []byte) error {

@@ -1,32 +1,20 @@
 package Gerver
 
 import (
-	Gerver "Gerver/Gerver/iface"
-	"bufio"
+	IGerver "Gerver/Gerver/iface"
 	"fmt"
 	"net"
 )
 
 type Server struct {
+	router IGerver.IRouter
 }
 
-func NewServer() Gerver.IServer {
-	s := &Server{}
-	return s
-}
-
-func (s *Server) process(conn net.Conn) {
-	for {
-		reader := bufio.NewReader(conn)
-		var buf [128]byte
-		n, err := reader.Read(buf[:])
-		if err != nil {
-			fmt.Println("read from client failed, err : ", err)
-			break
-		}
-		fmt.Println("read client data : ", string(buf[:n]))
-		conn.Write(buf[:n])
+func NewServer() IGerver.IServer {
+	s := &Server{
+		router: nil,
 	}
+	return s
 }
 
 func (s *Server) Start() {
@@ -35,12 +23,25 @@ func (s *Server) Start() {
 		fmt.Println("listen failed, err:", err)
 		return
 	}
-	for {
-		conn, err := listen.Accept() // 建立连接
-		if err != nil {
-			fmt.Println("accept failed, err:", err)
-			continue
+	go func() {
+		var ID uint64 = 0
+		for {
+			conn, err := listen.Accept() // 建立连接
+			if err != nil {
+				fmt.Println("accept failed, err:", err)
+				continue
+			}
+			NC := NewConnection(s, conn, ID)
+			NC.Start()
+			ID++
 		}
-		go s.process(conn) // 启动一个goroutine处理连接
-	}
+	}()
+}
+
+func (s *Server) AddRouter(router IGerver.IRouter) {
+	s.router = router
+}
+
+func (s *Server) GetRouter() IGerver.IRouter {
+	return s.router
 }
