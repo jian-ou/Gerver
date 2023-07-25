@@ -3,14 +3,16 @@ package gnet
 import "Gerver/giface"
 
 type Request struct {
-	dat        []byte
 	connection giface.IConnection
+	dat        []byte
+	router     giface.IRouter
 }
 
-func NewRequest(connection giface.IConnection, dat []byte) giface.IRequest {
+func NewRequest(connection giface.IConnection, dat []byte, router giface.IRouter) giface.IRequest {
 	r := &Request{
 		dat:        dat,
 		connection: connection,
+		router:     router,
 	}
 	return r
 }
@@ -21,4 +23,10 @@ func (r *Request) GetData() []byte {
 
 func (r *Request) GetConnection() giface.IConnection {
 	return r.connection
+}
+
+func (r *Request) Run() {
+	r.router.PreHandle(r)
+	r.router.Handle(r)
+	r.router.PostHandle(r)
 }

@@ -11,12 +11,17 @@ type Server struct {
 	Name     string
 	Version  string
 	HostPort uint
-	router   giface.IRouter
+
+	// connections map[uint32]giface.IConnection
+
+	// manage    giface.IManage
+	// processes []giface.IProcess
+	routers map[uint32]giface.IRouter
 }
 
 func NewServer() giface.IServer {
 	s := &Server{
-		router: nil,
+		routers: make(map[uint32]giface.IRouter),
 	}
 	s.Name = gconf.Globalconf.Name
 	s.Version = gconf.Globalconf.Version
@@ -46,10 +51,13 @@ func (s *Server) Start() {
 	}()
 }
 
-func (s *Server) AddRouter(router giface.IRouter) {
-	s.router = router
+func (s *Server) AddRouter(msgID uint32, router giface.IRouter) {
+	s.routers[msgID] = router
 }
 
-func (s *Server) GetRouter() giface.IRouter {
-	return s.router
+func (s *Server) GetRouter(msgID uint32) giface.IRouter {
+	if s.routers[msgID] != nil {
+		return s.routers[msgID]
+	}
+	return &BaseRouter{}
 }

@@ -1,8 +1,11 @@
 package gnet
 
-import "Gerver/giface"
+import (
+	"Gerver/giface"
+)
 
-type BaseRouter struct{}
+type BaseRouter struct {
+}
 
 func (br *BaseRouter) PreHandle(req giface.IRequest)  {}
 func (br *BaseRouter) Handle(req giface.IRequest)     {}

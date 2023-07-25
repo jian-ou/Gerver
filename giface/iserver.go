@@ -2,6 +2,6 @@ package giface
 
 type IServer interface {
 	Start()
-	AddRouter(router IRouter)
-	GetRouter() IRouter
+	AddRouter(uint32, IRouter)
+	GetRouter(uint32) IRouter
 }

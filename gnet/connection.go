@@ -1,6 +1,7 @@
 package gnet
 
 import (
+	"Gerver/gcoder"
 	"Gerver/giface"
 	"bufio"
 	"fmt"
@@ -8,9 +9,10 @@ import (
 )
 
 type Connection struct {
-	conn       net.Conn
-	connID     uint64
-	server     giface.IServer
+	server giface.IServer
+	conn   net.Conn
+	connID uint64
+
 	msgBufChan chan []byte
 }
 
@@ -34,10 +36,14 @@ func (c *Connection) StartReader() {
 			fmt.Println("read from client failed, err:", err)
 			break
 		}
-		NR := NewRequest(c, buf[:n])
-		c.GetServer().GetRouter().PreHandle(NR)
-		c.GetServer().GetRouter().Handle(NR)
-		c.GetServer().GetRouter().PostHandle(NR)
+
+		cr := gcoder.NewTLVDecoder()
+		msgid, _, dat := cr.Decode(buf[:n])
+		NR := NewRequest(c, dat, (c.GetServer().GetRouter(msgid)))
+		NR.Run()
+		// c.GetServer().GetRouter().PreHandle(NR)
+		// c.GetServer().GetRouter().Handle(NR)
+		// c.GetServer().GetRouter().PostHandle(NR)
 	}
 }
 
