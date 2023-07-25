@@ -13,27 +13,38 @@ type Connection struct {
 	conn   net.Conn
 	connID uint64
 
+	state uint16
+
+	PreHandle  func(giface.IConnection)
+	PostHandle func(giface.IConnection)
+
 	msgBufChan chan []byte
+	closeChan  chan bool
 }
 
-func NewConnection(server giface.IServer, conn net.Conn, connID uint64) giface.IConnection {
+func NewConnection(server giface.IServer, conn net.Conn, connID uint64, state uint16) giface.IConnection {
 	c := &Connection{
 		conn:       conn,
 		connID:     connID,
 		msgBufChan: make(chan []byte),
 		server:     server,
+		state:      0,
+		closeChan:  make(chan bool, 1),
 	}
+	c.SetState(state)
+	c.PreHandle = server.GetPreHandle()
+	c.PostHandle = server.GetPostHandle()
 	return c
 }
 
 func (c *Connection) StartReader() {
-	fmt.Println("Reader start", c.GetConnID())
 	for {
 		reader := bufio.NewReader(c.conn)
 		var buf [128]byte
 		n, err := reader.Read(buf[:])
 		if err != nil {
-			fmt.Println("read from client failed, err:", err)
+			c.closeChan <- true
+			// fmt.Println("read from client failed, err:", err)
 			break
 		}
 
@@ -48,7 +59,6 @@ func (c *Connection) StartReader() {
 }
 
 func (c *Connection) StartWriter() {
-	fmt.Println("Writer start", c.GetConnID())
 	for {
 		select {
 		case data, ok := <-c.msgBufChan:
@@ -56,16 +66,26 @@ func (c *Connection) StartWriter() {
 				fmt.Println("get data : ", data)
 				c.Send(data)
 			}
+		case b := <-c.closeChan:
+			if b {
+				c.Stop()
+				return
+			}
 		}
 	}
 }
 
 func (c *Connection) Start() {
+	c.PreHandle(c)
+
 	go c.StartReader()
 	go c.StartWriter()
 }
 func (c *Connection) Stop() {
-
+	c.PostHandle(c)
+	close(c.closeChan)
+	close(c.msgBufChan)
+	c.SetState(0)
 }
 
 func (c *Connection) GetConnID() uint64 {
@@ -85,4 +105,8 @@ func (c *Connection) GetServer() giface.IServer {
 
 func (c *Connection) GetConn() net.Conn {
 	return c.conn
+}
+
+func (c *Connection) SetState(state uint16) {
+	c.state = state
 }

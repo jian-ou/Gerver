@@ -12,6 +12,9 @@ type Server struct {
 	Version  string
 	HostPort uint
 
+	PreHandle  func(giface.IConnection)
+	PostHandle func(giface.IConnection)
+
 	// connections map[uint32]giface.IConnection
 
 	// manage    giface.IManage
@@ -26,6 +29,8 @@ func NewServer() giface.IServer {
 	s.Name = gconf.Globalconf.Name
 	s.Version = gconf.Globalconf.Version
 	s.HostPort = gconf.Globalconf.HostPort
+	s.PreHandle = func(i giface.IConnection) {}
+	s.PostHandle = func(i giface.IConnection) {}
 	return s
 }
 
@@ -44,7 +49,7 @@ func (s *Server) Start() {
 				fmt.Println("accept failed, err:", err)
 				continue
 			}
-			NC := NewConnection(s, conn, ID)
+			NC := NewConnection(s, conn, ID, 1)
 			NC.Start()
 			ID++
 		}
@@ -59,5 +64,19 @@ func (s *Server) GetRouter(msgID uint32) giface.IRouter {
 	if s.routers[msgID] != nil {
 		return s.routers[msgID]
 	}
-	return &BaseRouter{}
+	return &NoneRouter{}
+}
+
+func (s *Server) AddPreHandle(p func(giface.IConnection)) {
+	s.PreHandle = p
+}
+func (s *Server) AddPostHandle(p func(giface.IConnection)) {
+	s.PostHandle = p
+}
+
+func (s *Server) GetPreHandle() func(giface.IConnection) {
+	return s.PreHandle
+}
+func (s *Server) GetPostHandle() func(giface.IConnection) {
+	return s.PostHandle
 }

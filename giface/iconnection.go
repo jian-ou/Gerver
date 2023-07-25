@@ -9,4 +9,5 @@ type IConnection interface {
 	GetConnID() uint64
 	GetServer() IServer
 	Send([]byte)
+	SetState(uint16)
 }
