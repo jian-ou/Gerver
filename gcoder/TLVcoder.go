@@ -6,8 +6,6 @@ import (
 	"encoding/binary"
 )
 
-const TLV_HEADER_SIZE = 8 //表示TLV空包长度
-
 type TLVcoder struct {
 }
 
