@@ -7,11 +7,11 @@ import (
 )
 
 func TestTLVcoder(t *testing.T) {
-	c := gcoder.NewTLVDecoder()
+	c := gcoder.NewTLVCoder()
 	d := c.Encode(1000, []byte("helloworld"))
 	d = append(d, c.Encode(1000, []byte("helloworld"))...)
 	fmt.Println(d)
-	tag, length, value := c.Decode(d)
+	tag, length, value, _ := c.Decode(d)
 	if len(d) > int(length) {
 		d = d[length:]
 	}

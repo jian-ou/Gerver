@@ -2,6 +2,7 @@ package gnet
 
 import (
 	"Gerver/gcoder"
+	"Gerver/gconf"
 	"Gerver/giface"
 	"bufio"
 	"fmt"
@@ -14,6 +15,10 @@ type Connection struct {
 	connID uint64
 
 	state uint8
+
+	buf     []byte
+	coder   giface.ICoder
+	bufSize int
 
 	PreHandle  func(giface.IConnection)
 	PostHandle func(giface.IConnection)
@@ -29,7 +34,10 @@ func NewConnection(server giface.IServer, conn net.Conn, connID uint64, state ui
 		msgBufChan: make(chan []byte),
 		server:     server,
 		state:      0,
+		bufSize:    gconf.Globalconf.MaxConnBufSize,
+		buf:        make([]byte, 0),
 		closeChan:  make(chan bool, 1),
+		coder:      gcoder.NewTLVCoder(),
 	}
 	c.SetState(state)
 	c.PreHandle = server.GetPreHandle()
@@ -40,23 +48,26 @@ func NewConnection(server giface.IServer, conn net.Conn, connID uint64, state ui
 func (c *Connection) StartReader() {
 	for {
 		reader := bufio.NewReader(c.conn)
-		buf := make([]byte, 128)
+		buf := make([]byte, c.bufSize)
 		n, err := reader.Read(buf[:])
 		if err != nil {
 			c.closeChan <- true
 			// fmt.Println("read from client failed, err:", err)
 			break
 		}
-		buf = buf[:n]
-		cr := gcoder.NewTLVDecoder()
+		c.buf = append(c.buf, buf[:n]...)
 		for {
-			if len(buf) < 8 {
+			msgid, length, dat, err := c.coder.Decode(c.buf[:])
+			if err != nil {
 				break
 			}
-			msgid, length, dat := cr.Decode(buf[:])
-			buf = buf[length:]
 			NR := NewRequest(c, dat, (c.GetServer().GetRouter(msgid)))
 			c.GetServer().GetDispatch().AddRequest(NR)
+
+			c.buf = c.buf[length:]
+			if len(c.buf) == 0 {
+				break
+			}
 		}
 	}
 }
@@ -115,4 +126,12 @@ func (c *Connection) GetConn() net.Conn {
 
 func (c *Connection) SetState(state uint8) {
 	c.state = state
+}
+
+func (c *Connection) RemoteAddr() net.Addr {
+	return c.conn.RemoteAddr()
+}
+
+func (c *Connection) LocalAddr() net.Addr {
+	return c.conn.LocalAddr()
 }

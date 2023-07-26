@@ -34,7 +34,7 @@ func (c *Client) Start() {
 		return
 	}
 	fmt.Printf("[%s Client] start\n", c.Name)
-	buf := make([]byte, 128)
+	buf := make([]byte, 4096)
 	go func() {
 		for {
 			n, err := c.conn.Read(buf[:])
