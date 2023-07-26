@@ -2,21 +2,25 @@ package main
 
 import (
 	"Gerver/gcoder"
+	"Gerver/giface"
 	"Gerver/gnet"
 	"time"
 )
 
+var c []giface.IClient
+
 func main() {
-	client := gnet.NewClient()
-	client.Start()
-	c := gcoder.NewTLVCoder()
+	c := make([]giface.IClient, 100)
+	for i := 0; i < 100; i++ {
+		c[i] = gnet.NewClient()
+		c[i].Start()
+	}
+	coder := gcoder.NewTLVCoder()
+	time.Sleep(time.Duration(5) * time.Second)
 	for {
-		client.Send(c.Encode(100, []byte("hello world")))
-		client.Send(c.Encode(200, []byte("hello world")))
-		time.Sleep(time.Duration(1) * time.Microsecond)
-		client.Send(c.Encode(200, []byte("hello world")))
-		time.Sleep(time.Duration(1) * time.Microsecond)
-		client.Send(c.Encode(201, []byte("hello world")))
+		for i := 0; i < 100; i++ {
+			c[i].Send(coder.Encode(100, []byte("hello world")))
+		}
 		time.Sleep(time.Duration(1) * time.Microsecond)
 	}
 }
