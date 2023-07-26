@@ -2,7 +2,6 @@ package gnet
 
 import (
 	"Gerver/giface"
-	"fmt"
 )
 
 type Process struct {
@@ -21,7 +20,6 @@ func NewProcess(dispatch giface.IDispatch, maxSize int, ID int) giface.IProcess 
 		size:        0,
 		RequestChan: make(chan giface.IRequest),
 	}
-	fmt.Printf("Process [%d] start\n", ID)
 	go p.Run()
 	return p
 }

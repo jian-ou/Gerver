@@ -3,6 +3,7 @@ package gnet
 import (
 	"Gerver/gconf"
 	"Gerver/giface"
+	"Gerver/glogo"
 	"fmt"
 	"net"
 )
@@ -41,7 +42,8 @@ func (s *Server) Start() {
 		fmt.Println("listen failed, err:", err)
 		return
 	}
-	fmt.Printf("[%s Server] start\n", s.Name)
+	glogo.Logo()
+	fmt.Printf("[%s-Server] start at [%s:%d]\n", s.Name, "0.0.0.0", s.HostPort)
 	go func() {
 		var ID uint64 = 0
 		for {
