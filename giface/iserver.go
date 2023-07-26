@@ -8,4 +8,5 @@ type IServer interface {
 	AddPostHandle(func(IConnection))
 	GetPreHandle() func(IConnection)
 	GetPostHandle() func(IConnection)
+	GetDispatch() IDispatch
 }

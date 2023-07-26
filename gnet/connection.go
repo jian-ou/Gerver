@@ -13,7 +13,7 @@ type Connection struct {
 	conn   net.Conn
 	connID uint64
 
-	state uint16
+	state uint8
 
 	PreHandle  func(giface.IConnection)
 	PostHandle func(giface.IConnection)
@@ -22,7 +22,7 @@ type Connection struct {
 	closeChan  chan bool
 }
 
-func NewConnection(server giface.IServer, conn net.Conn, connID uint64, state uint16) giface.IConnection {
+func NewConnection(server giface.IServer, conn net.Conn, connID uint64, state uint8) giface.IConnection {
 	c := &Connection{
 		conn:       conn,
 		connID:     connID,
@@ -51,10 +51,7 @@ func (c *Connection) StartReader() {
 		cr := gcoder.NewTLVDecoder()
 		msgid, _, dat := cr.Decode(buf[:n])
 		NR := NewRequest(c, dat, (c.GetServer().GetRouter(msgid)))
-		NR.Run()
-		// c.GetServer().GetRouter().PreHandle(NR)
-		// c.GetServer().GetRouter().Handle(NR)
-		// c.GetServer().GetRouter().PostHandle(NR)
+		c.GetServer().GetDispatch().AddRequest(NR)
 	}
 }
 
@@ -86,6 +83,9 @@ func (c *Connection) Stop() {
 	close(c.closeChan)
 	close(c.msgBufChan)
 	c.SetState(0)
+	if err := c.conn.Close(); err != nil {
+		fmt.Println("Conn Close err : ", err)
+	}
 }
 
 func (c *Connection) GetConnID() uint64 {
@@ -107,6 +107,6 @@ func (c *Connection) GetConn() net.Conn {
 	return c.conn
 }
 
-func (c *Connection) SetState(state uint16) {
+func (c *Connection) SetState(state uint8) {
 	c.state = state
 }

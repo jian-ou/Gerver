@@ -18,8 +18,8 @@ type Server struct {
 	// connections map[uint32]giface.IConnection
 
 	// manage    giface.IManage
-	// processes []giface.IProcess
-	routers map[uint32]giface.IRouter
+	dispatch giface.IDispatch
+	routers  map[uint32]giface.IRouter
 }
 
 func NewServer() giface.IServer {
@@ -31,6 +31,7 @@ func NewServer() giface.IServer {
 	s.HostPort = gconf.Globalconf.HostPort
 	s.PreHandle = func(i giface.IConnection) {}
 	s.PostHandle = func(i giface.IConnection) {}
+	s.dispatch = NewDispatch(s, gconf.Globalconf.MaxProcess)
 	return s
 }
 
@@ -79,4 +80,8 @@ func (s *Server) GetPreHandle() func(giface.IConnection) {
 }
 func (s *Server) GetPostHandle() func(giface.IConnection) {
 	return s.PostHandle
+}
+
+func (s *Server) GetDispatch() giface.IDispatch {
+	return s.dispatch
 }

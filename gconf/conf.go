@@ -7,20 +7,22 @@ import (
 )
 
 type GlobalConf struct {
-	Name     string
-	Version  string
-	Host     string
-	HostPort uint
+	Name       string
+	Version    string
+	Host       string
+	MaxProcess int
+	HostPort   uint
 }
 
 var Globalconf *GlobalConf
 
 func init() {
 	Globalconf = &GlobalConf{
-		Name:     string("Gerver"),
-		Version:  string("V0.0.1"),
-		Host:     string("127.0.0.1"),
-		HostPort: 7650,
+		Name:       string("Gerver"),
+		Version:    string("V0.0.1"),
+		Host:       string("127.0.0.1"),
+		HostPort:   7650,
+		MaxProcess: 10,
 	}
 	data, err := os.ReadFile("./Gerver.conf")
 	if err != nil || len(data) == 0 {
