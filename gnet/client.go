@@ -40,7 +40,7 @@ func (c *Client) Start() {
 			n, err := c.conn.Read(buf[:])
 			if err != nil {
 				fmt.Println("recv failed, err:", err)
-				return
+				panic(err)
 			}
 			fmt.Println(string(buf[:n]))
 		}

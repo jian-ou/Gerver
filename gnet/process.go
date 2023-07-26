@@ -28,11 +28,9 @@ func NewProcess(dispatch giface.IDispatch, maxSize int, ID int) giface.IProcess 
 
 func (p *Process) Run() {
 	for {
-		select {
-		case r := <-p.RequestChan:
-			r.Run()
-			p.size--
-		}
+		r := <-p.RequestChan
+		r.Run()
+		p.size--
 	}
 }
 

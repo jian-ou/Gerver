@@ -40,18 +40,24 @@ func NewConnection(server giface.IServer, conn net.Conn, connID uint64, state ui
 func (c *Connection) StartReader() {
 	for {
 		reader := bufio.NewReader(c.conn)
-		var buf [128]byte
+		buf := make([]byte, 128)
 		n, err := reader.Read(buf[:])
 		if err != nil {
 			c.closeChan <- true
 			// fmt.Println("read from client failed, err:", err)
 			break
 		}
-
+		buf = buf[:n]
 		cr := gcoder.NewTLVDecoder()
-		msgid, _, dat := cr.Decode(buf[:n])
-		NR := NewRequest(c, dat, (c.GetServer().GetRouter(msgid)))
-		c.GetServer().GetDispatch().AddRequest(NR)
+		for {
+			if len(buf) < 8 {
+				break
+			}
+			msgid, length, dat := cr.Decode(buf[:])
+			buf = buf[length:]
+			NR := NewRequest(c, dat, (c.GetServer().GetRouter(msgid)))
+			c.GetServer().GetDispatch().AddRequest(NR)
+		}
 	}
 }
 

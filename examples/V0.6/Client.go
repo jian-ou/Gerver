@@ -12,6 +12,7 @@ func main() {
 	c := gcoder.NewTLVDecoder()
 	for {
 		client.Send(c.Encode(100, []byte("hello world")))
+		client.Send(c.Encode(200, []byte("hello world")))
 		time.Sleep(time.Duration(1) * time.Second)
 		client.Send(c.Encode(200, []byte("hello world")))
 		time.Sleep(time.Duration(1) * time.Second)
