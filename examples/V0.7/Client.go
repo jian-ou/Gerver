@@ -20,6 +20,8 @@ func main() {
 	for {
 		for i := 0; i < 100; i++ {
 			c[i].Send(coder.Encode(100, []byte("hello world")))
+			c[i].Send(coder.Encode(200, []byte("hello world")))
+			c[i].Send(coder.Encode(300, []byte("hello world")))
 		}
 		time.Sleep(time.Duration(1) * time.Microsecond)
 	}
